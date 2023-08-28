@@ -9,7 +9,7 @@ use DynamicsWebApi\Exceptions\UnsupportedMethodException;
 class Helper {
 	private Client $dynamicsClient;
 	public function __construct() {
-		$this->dynamicsClient = new Client();
+		$this->dynamicsClient = Client::createInstance();
 	}
 
 	/**

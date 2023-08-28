@@ -25,9 +25,9 @@ class Client {
 	 * @throws VariableNotSetException
 	 * @throws VariableInvalidFormatException
 	 */
-	public function __construct() {
+	private function __construct(HttpClient $httpClient) {
 		self::validateEnvironmentVariables();
-		$this->httpClient = new HttpClient();
+		$this->httpClient = $httpClient;
 		$this->instanceUrl = getenv(self::INSTANCE_URL_VARIABLE);
 		$this->authenticate();
 	}
@@ -133,5 +133,20 @@ class Client {
 			throw new RequestException("Dynamics API call failed with code {$response->getStatusCode()} and body {$response->getBody()->getContents()}");
 		}
 		return $response;
+	}
+
+	/**
+	 * @param HttpClient|null $httpClient - This is here just for tests
+	 * @return static
+	 * @throws NotAuthenticatedException
+	 * @throws RequestException
+	 * @throws VariableInvalidFormatException
+	 * @throws VariableNotSetException
+	 */
+	public static function createInstance(HttpClient $httpClient = null): self {
+		if (!$httpClient) {
+			$httpClient = new HttpClient();
+		}
+		return new self($httpClient);
 	}
 }

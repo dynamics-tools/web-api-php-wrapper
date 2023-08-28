@@ -24,10 +24,11 @@ Ensure the environment variables are set before running the example.
 ### Using the Client
 ````php
 use DynamicsWebApi\Client;
+use DynamicsWebApi\ClientFactory;
 
 require_once 'vendor/autoload.php';
 
-$client = new Client();
+$client = Client::createInstance();
 $response = $client->request('/CloneAsSolution', 'POST', [
 'ParentSolutionUniqueName' => 'MySolution',
 'DisplayName' => 'MySolution',
