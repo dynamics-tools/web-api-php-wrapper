@@ -26,7 +26,7 @@ class ClientTest extends TestCase {
 	}
 	private function createClient(): Client {
 		$this->setPassingEnvVars();
-		$this->httpClient->method('post')->willReturn(new Response(200, [], '{"access_token": "test"}'));
+		$this->httpClient->expects($this->once())->method('post')->willReturn(new Response(200, [], '{"access_token": "test"}'));
 		return Client::createInstance($this->httpClient);
 	}
 	public function testValidateEnvironmentVariablesVariablesNotSet(): void {
@@ -68,9 +68,8 @@ class ClientTest extends TestCase {
 	}
 	public function testNotAuthenticatedThrowsError(): void {
 		$client = $this->createClient();
-		$this->httpClient->method('put')->willReturn(new Response(403, [], '{"error": "test"}'));
+		$this->httpClient->expects($this->once())->method('put')->willReturn(new Response(403, [], '{"error": "test"}'));
 		$this->expectException(NotAuthenticatedException::class);
-		$helloWorld = $client->request('/HelloWorld', 'put');
-		var_dump($helloWorld);
+		$client->request('/HelloWorld', 'put');
 	}
 }
