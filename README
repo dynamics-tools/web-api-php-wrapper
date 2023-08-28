@@ -10,7 +10,9 @@ We utilize server-to-server OAuth authentication via an application user. To suc
 **APPLICATION_ID**: Application (Client) ID
 
 **APPLICATION_SECRET**: Application (Client) Secret
+
 **TENANT_ID**: Tenant ID
+
 **INSTANCE_URL**: Dynamics (Instance) URL
 
 ## API Documentation
