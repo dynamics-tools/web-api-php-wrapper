@@ -1,6 +1,6 @@
 {
   "name": "dynamics-tools/dynamics-web-api-php-wrapper",
-  "description": "PHP wrapper for Microsoft Dynamics Web API",
+  "description": "PHP 8.1 wrapper for Microsoft Dynamics Web API",
   "type": "library",
   "require": {
     "php": "^8.1",
