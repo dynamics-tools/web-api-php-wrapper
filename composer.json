@@ -1,5 +1,5 @@
 {
-  "name": "yourusername/dynamics-web-api-php-wrapper",
+  "name": "dynamics-tools/dynamics-web-api-php-wrapper",
   "description": "PHP wrapper for Microsoft Dynamics Web API",
   "type": "library",
   "require": {
