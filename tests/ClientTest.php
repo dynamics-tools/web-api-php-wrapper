@@ -72,4 +72,10 @@ class ClientTest extends TestCase {
 		$this->expectException(NotAuthenticatedException::class);
 		$client->request('/HelloWorld', 'put');
 	}
+	public function testHttpErrorThrowsException(): void {
+		$client = $this->createClient();
+		$this->httpClient->expects($this->once())->method('put')->willReturn(new Response(400, [], '{"error": "test"}'));
+		$this->expectException(RequestException::class);
+		$client->request('/HelloWorld', 'put');
+	}
 }
