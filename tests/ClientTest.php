@@ -3,6 +3,7 @@
 namespace Tests;
 
 use DynamicsWebApi\Client;
+use DynamicsWebApi\Exceptions\NotAuthenticatedException;
 use DynamicsWebApi\Exceptions\VariableInvalidFormatException;
 use DynamicsWebApi\Exceptions\VariableNotSetException;
 use Error;
@@ -21,6 +22,11 @@ class ClientTest extends TestCase {
 		putenv(Client::APPLICATION_SECRET . '=test');
 		putenv(Client::INSTANCE_URL_VARIABLE . '=https://test.crm.dynamics.com');
 	}
+	private function createClient(): Client {
+		$this->setPassingEnvVars();
+		$this->httpClient->method('post')->willReturn(new Response(200, [], '{"access_token": "test"}'));
+		return Client::createInstance($this->httpClient);
+	}
 	public function testValidateEnvironmentVariablesVariablesNotSet(): void {
 		$this->expectException(VariableNotSetException::class);
 		Client::validateEnvironmentVariables();
@@ -35,6 +41,17 @@ class ClientTest extends TestCase {
 	}
 	public function testCannotInitClient(): void {
 		$this->expectException(Error::class);
-		$client = new Client($this->httpClient);
+		/** @noinspection */
+		new Client($this->httpClient);
+	}
+	public function testCanInitClient(): void {
+		$client = $this->createClient();
+		$this->assertInstanceOf(Client::class, $client);
+	}
+	public function testClientThrowsOnNoAuth(): void {
+		$this->setPassingEnvVars();
+		$this->httpClient->method('post')->willReturn(new Response(401, [], '{"error": "test"}'));
+		$this->expectException(NotAuthenticatedException::class);
+		Client::createInstance($this->httpClient);
 	}
 }
