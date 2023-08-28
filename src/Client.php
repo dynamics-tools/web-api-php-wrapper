@@ -4,9 +4,11 @@ namespace DynamicsWebApi;
 
 use DynamicsWebApi\Exceptions\NotAuthenticatedException;
 use DynamicsWebApi\Exceptions\RequestException;
+use DynamicsWebApi\Exceptions\UnsupportedMethodException;
 use DynamicsWebApi\Exceptions\VariableInvalidFormatException;
 use DynamicsWebApi\Exceptions\VariableNotSetException;
 use GuzzleHttp\Client as HttpClient;
+use Psr\Http\Message\ResponseInterface;
 
 class Client {
 	const INSTANCE_URL_VARIABLE = 'INSTANCE_URL';
@@ -18,17 +20,22 @@ class Client {
 	private string $instanceUrl;
 
 	/**
+	 * @throws NotAuthenticatedException
+	 * @throws RequestException
 	 * @throws VariableNotSetException
+	 * @throws VariableInvalidFormatException
 	 */
 	public function __construct() {
 		self::validateEnvironmentVariables();
 		$this->httpClient = new HttpClient();
 		$this->instanceUrl = getenv(self::INSTANCE_URL_VARIABLE);
+		$this->authenticate();
 	}
 
 	/**
 	 * @return void
 	 * @throws VariableNotSetException
+	 * @throws VariableInvalidFormatException
 	 */
 	public static function validateEnvironmentVariables(): void {
 		$environmentVariablesToValidate = [
@@ -49,6 +56,11 @@ class Client {
 
 	}
 
+	/**
+	 * @return void
+	 * @throws NotAuthenticatedException
+	 * @throws RequestException
+	 */
 	private function authenticate(): void {
 		$tenantId = getenv(self::TENANT_ID_VARIABLE);
 		$response = $this->httpClient->post("https://login.microsoftonline.com/$tenantId/oauth2/token", [
@@ -70,5 +82,60 @@ class Client {
 			throw new RequestException('Something went wrong with the authenticate request - the request body does not contain an access token. This is its contents: ' . $requestBody);
 		}
 		$this->accessToken = $tokenData['access_token'];
+	}
+
+	/**
+	 * @param string $path
+	 * @param string $method
+	 * @param array $bodyContent
+	 * @return ResponseInterface
+	 * @throws NotAuthenticatedException
+	 * @throws RequestException
+	 * @throws UnsupportedMethodException
+	 */
+	public function request(string $path, string $method = 'GET', array $bodyContent = []): ResponseInterface {
+		$upperMethod = strtoupper($method);
+		if (!in_array($upperMethod, ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'])) {
+			throw new UnsupportedMethodException('Sorry, we don\'t currently support ' . $upperMethod . ' as an http request method');
+		}
+		$data = [
+			'headers' => [
+				'OData-MaxVersion' => '4.0',
+				'OData-Version' => '4.0',
+				'Authorization' => "Bearer $this->accessToken",
+				'Accept' => 'application/json',
+			],
+			'http_errors' => false,
+		];
+		if (!empty($bodyContent)) {
+			$data['json'] = $bodyContent;
+			$data['headers']['Content-Type'] = 'application/json';
+		}
+		$fullUrl = $this->instanceUrl . $path;
+		switch ($upperMethod) {
+			case 'GET':
+				$response = $this->httpClient->get($fullUrl, $data);
+				break;
+			case 'POST':
+				$response = $this->httpClient->post($fullUrl, $data);
+				break;
+				break;
+			case 'PUT':
+				$response = $this->httpClient->put($fullUrl, $data);
+				break;
+			case 'PATCH':
+				$response = $this->httpClient->patch($fullUrl, $data);
+				break;
+			case 'DELETE':
+				$response = $this->httpClient->delete($fullUrl, $data);
+				break;
+		}
+		if ($response->getStatusCode() === 401 || $response->getStatusCode() === 403) {
+			throw new NotAuthenticatedException('This request was not authenticated');
+		}
+		if ($response->getStatusCode() >= 400) {
+			throw new RequestException("Dynamics API call failed with code {$response->getStatusCode()} and body {$response->getBody()->getContents()}");
+		}
+		return $response;
 	}
 }
