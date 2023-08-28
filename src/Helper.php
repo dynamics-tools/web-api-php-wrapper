@@ -5,11 +5,12 @@ namespace DynamicsWebApi;
 use DynamicsWebApi\Exceptions\NotAuthenticatedException;
 use DynamicsWebApi\Exceptions\RequestException;
 use DynamicsWebApi\Exceptions\UnsupportedMethodException;
+use GuzzleHttp\Client as HttpClient;
 
 class Helper {
 	private Client $dynamicsClient;
-	public function __construct() {
-		$this->dynamicsClient = Client::createInstance();
+	public function __construct(HttpClient $httpClient = null) {
+		$this->dynamicsClient = Client::createInstance($httpClient);
 	}
 
 	/**

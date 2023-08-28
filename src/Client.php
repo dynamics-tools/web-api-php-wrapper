@@ -20,10 +20,7 @@ class Client {
 	private string $instanceUrl;
 
 	/**
-	 * @throws NotAuthenticatedException
-	 * @throws RequestException
-	 * @throws VariableNotSetException
-	 * @throws VariableInvalidFormatException
+	 * @param HttpClient $httpClient
 	 */
 	private function __construct(HttpClient $httpClient) {
 		self::validateEnvironmentVariables();
@@ -34,8 +31,6 @@ class Client {
 
 	/**
 	 * @return void
-	 * @throws VariableNotSetException
-	 * @throws VariableInvalidFormatException
 	 */
 	public static function validateEnvironmentVariables(): void {
 		$environmentVariablesToValidate = [
@@ -58,8 +53,6 @@ class Client {
 
 	/**
 	 * @return void
-	 * @throws NotAuthenticatedException
-	 * @throws RequestException
 	 */
 	private function authenticate(): void {
 		$tenantId = getenv(self::TENANT_ID_VARIABLE);
@@ -88,10 +81,8 @@ class Client {
 	 * @param string $path
 	 * @param string $method
 	 * @param array $bodyContent
+	 * @param string $apiVersion
 	 * @return ResponseInterface
-	 * @throws NotAuthenticatedException
-	 * @throws RequestException
-	 * @throws UnsupportedMethodException
 	 */
 	public function request(string $path, string $method = 'GET', array $bodyContent = [], string $apiVersion = '9.0'): ResponseInterface {
 		$upperMethod = strtoupper($method);
@@ -136,12 +127,8 @@ class Client {
 	}
 
 	/**
-	 * @param HttpClient|null $httpClient - This is here just for tests
-	 * @return static
-	 * @throws NotAuthenticatedException
-	 * @throws RequestException
-	 * @throws VariableInvalidFormatException
-	 * @throws VariableNotSetException
+	 * @param HttpClient|null $httpClient - This is here just for tests, typically you don't pass this in manually
+	 * @return Client
 	 */
 	public static function createInstance(HttpClient $httpClient = null): self {
 		if (!$httpClient) {
