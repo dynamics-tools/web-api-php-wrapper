@@ -21,11 +21,14 @@ The API documentation for this version of the Dynamics Web API can be found [her
 ## Usage Example
 Ensure the environment variables are set before running the example.
 
+### Using the Client
 ````php
+use DynamicsWebApi\Client;
+
 require_once 'vendor/autoload.php';
 
 $client = new Client();
-$response = $client->request('/api/data/v9.0/CloneAsSolution', 'POST', [
+$response = $client->request('/CloneAsSolution', 'POST', [
 'ParentSolutionUniqueName' => 'MySolution',
 'DisplayName' => 'MySolution',
 'VersionNumber' => '1.12.0.0'
@@ -33,4 +36,15 @@ $response = $client->request('/api/data/v9.0/CloneAsSolution', 'POST', [
 
 $responseJson = json_decode($response->getBody()->getContents(), true);
 echo $responseJson['SolutionId'];
+````
+
+### Using the Helper
+````php
+use DynamicsWebApi\Helper;
+
+require_once 'vendor/autoload.php';
+
+$helper = new Helper();
+$helper->updateEntity('pluginassemblies', '38938383-383838-392912-192882', ['name' => 'MyPluginAssembly'], '9.2');
+$helper->publishAllChanges();
 ````
