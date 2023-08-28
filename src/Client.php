@@ -138,4 +138,17 @@ class Client {
 		}
 		return $response;
 	}
+
+	/**
+	 * @return void
+	 * @throws RequestException
+	 * @throws NotAuthenticatedException
+	 * @throws UnsupportedMethodException
+	 */
+	public function publishAllChanges(): void {
+		$apiResponse = $this->request('/api/data/v9.0/PublishAllXml', 'POST');
+		if ($apiResponse->getStatusCode() !== 204) {
+			throw new RequestException('The changes were not published because something went wrong. Status code ' . $apiResponse->getStatusCode());
+		}
+	}
 }
