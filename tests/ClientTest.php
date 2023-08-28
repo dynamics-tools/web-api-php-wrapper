@@ -4,6 +4,7 @@ namespace Tests;
 
 use DynamicsWebApi\Client;
 use DynamicsWebApi\Exceptions\NotAuthenticatedException;
+use DynamicsWebApi\Exceptions\UnsupportedMethodException;
 use DynamicsWebApi\Exceptions\VariableInvalidFormatException;
 use DynamicsWebApi\Exceptions\VariableNotSetException;
 use Error;
@@ -53,5 +54,10 @@ class ClientTest extends TestCase {
 		$this->httpClient->method('post')->willReturn(new Response(401, [], '{"error": "test"}'));
 		$this->expectException(NotAuthenticatedException::class);
 		Client::createInstance($this->httpClient);
+	}
+	public function testMethodValidation(): void {
+		$client = $this->createClient();
+		$this->expectException(UnsupportedMethodException::class);
+		$client->request('/Hello', 'OPTIONS');
 	}
 }
