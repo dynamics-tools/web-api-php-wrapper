@@ -4,6 +4,7 @@ namespace Tests;
 
 use DynamicsWebApi\Client;
 use DynamicsWebApi\Exceptions\NotAuthenticatedException;
+use DynamicsWebApi\Exceptions\RequestException;
 use DynamicsWebApi\Exceptions\UnsupportedMethodException;
 use DynamicsWebApi\Exceptions\VariableInvalidFormatException;
 use DynamicsWebApi\Exceptions\VariableNotSetException;
@@ -59,5 +60,10 @@ class ClientTest extends TestCase {
 		$client = $this->createClient();
 		$this->expectException(UnsupportedMethodException::class);
 		$client->request('/Hello', 'OPTIONS');
+	}
+	public function testThrowsOnSuperfluousPath(): void {
+		$client = $this->createClient();
+		$this->expectException(RequestException::class);
+		$client->request('/api/data/v9.2/HelloWorld', 'patch');
 	}
 }
