@@ -93,7 +93,7 @@ class Client {
 	 * @throws RequestException
 	 * @throws UnsupportedMethodException
 	 */
-	public function request(string $path, string $method = 'GET', array $bodyContent = []): ResponseInterface {
+	public function request(string $path, string $method = 'GET', array $bodyContent = [], string $apiVersion = '9.0'): ResponseInterface {
 		$upperMethod = strtoupper($method);
 		if (!in_array($upperMethod, ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'])) {
 			throw new UnsupportedMethodException('Sorry, we don\'t currently support ' . $upperMethod . ' as an http request method');
@@ -111,25 +111,21 @@ class Client {
 			$data['json'] = $bodyContent;
 			$data['headers']['Content-Type'] = 'application/json';
 		}
-		$fullUrl = $this->instanceUrl . $path;
-		switch ($upperMethod) {
-			case 'GET':
-				$response = $this->httpClient->get($fullUrl, $data);
-				break;
-			case 'POST':
-				$response = $this->httpClient->post($fullUrl, $data);
-				break;
-				break;
-			case 'PUT':
-				$response = $this->httpClient->put($fullUrl, $data);
-				break;
-			case 'PATCH':
-				$response = $this->httpClient->patch($fullUrl, $data);
-				break;
-			case 'DELETE':
-				$response = $this->httpClient->delete($fullUrl, $data);
-				break;
+		if ($upperMethod === 'DELETE' || $upperMethod === 'PATCH') {
+			$data['headers']['If-Match'] = '*';
 		}
+		if (str_contains($path, 'api/data/v')) {
+			throw new RequestException('You have included the data prefix to your path - there is no need to do that. All calls you make to this are prefixed with: ' . $this->instanceUrl . '/api/data/v9.0. If you need to change the Api Version, do so with the parameter to this method $apiVersion');
+		}
+		$fullUrl = $this->instanceUrl . '/api/data/v' . $apiVersion . $path;
+		$response = match ($upperMethod) {
+			'GET' => $this->httpClient->get($fullUrl, $data),
+			'POST' => $this->httpClient->post($fullUrl, $data),
+			'PUT' => $this->httpClient->put($fullUrl, $data),
+			'PATCH' => $this->httpClient->patch($fullUrl, $data),
+			'DELETE' => $this->httpClient->delete($fullUrl, $data),
+			default => throw new UnsupportedMethodException('Somehow, an unsupported method got here. The method attempted was ' . $upperMethod),
+		};
 		if ($response->getStatusCode() === 401 || $response->getStatusCode() === 403) {
 			throw new NotAuthenticatedException('This request was not authenticated');
 		}
@@ -137,18 +133,5 @@ class Client {
 			throw new RequestException("Dynamics API call failed with code {$response->getStatusCode()} and body {$response->getBody()->getContents()}");
 		}
 		return $response;
-	}
-
-	/**
-	 * @return void
-	 * @throws RequestException
-	 * @throws NotAuthenticatedException
-	 * @throws UnsupportedMethodException
-	 */
-	public function publishAllChanges(): void {
-		$apiResponse = $this->request('/api/data/v9.0/PublishAllXml', 'POST');
-		if ($apiResponse->getStatusCode() !== 204) {
-			throw new RequestException('The changes were not published because something went wrong. Status code ' . $apiResponse->getStatusCode());
-		}
 	}
 }
