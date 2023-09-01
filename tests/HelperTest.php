@@ -32,5 +32,8 @@ class HelperTest extends TestCase {
 		$this->expectException(RequestException::class);
 		$helper->publishAllChanges();
 	}
-
+	public function testGuidValidation(): void {
+		$this->assertTrue(Helper::isValidGuid('65ce9e04-3b9d-4415-bfc0-29fab7bbec3b'));
+		$this->assertFalse(Helper::isValidGuid('not valid guid'));
+	}
 }

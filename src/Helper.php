@@ -42,4 +42,8 @@ class Helper {
 			throw new RequestException("The entity {$entityName} with ID {$entityId} was not updated. The http status code is {$apiResponse->getStatusCode()}");
 		}
 	}
+
+	public static function isValidGuid(string $rawGuid): bool {
+		return preg_match('/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/i', $rawGuid) === 1;
+	}
 }
