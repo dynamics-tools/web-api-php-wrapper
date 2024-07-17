@@ -37,7 +37,7 @@ class Client {
 			['name' => self::APPLICATION_ID_VARIABLE],
 			['name' => self::TENANT_ID_VARIABLE],
 			['name' => self::APPLICATION_SECRET],
-			['name' => self::INSTANCE_URL_VARIABLE, 'regex' => '/^https:\/\/[a-zA-Z0-9]+\.crm(2?|[3-9]|1[1-9]|20|21)\.dynamics\.com$/']
+			['name' => self::INSTANCE_URL_VARIABLE, 'regex' => '/^https:\/\/[a-zA-Z0-9-]+\.crm(2?|[3-9]|1[1-9]|20|21)\.dynamics\.com$/']
 		];
 		foreach ($environmentVariablesToValidate as $variableToValidate) {
 			$variableResult = getenv($variableToValidate['name']);
